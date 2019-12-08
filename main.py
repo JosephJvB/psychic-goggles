@@ -18,10 +18,13 @@ class MyClient(discord.Client):
         if message.author.bot:
             return
         cmd = message.content.split(' ')[0]
+        if not cmd.startswith('!'):
+            return
         fn = self.cmds.get(cmd)
         if not fn:
             return
         else:
+            print(f'executing command [{cmd}]')
             await fn(message)
 
 
