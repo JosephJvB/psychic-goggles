@@ -1,16 +1,34 @@
 import os
 import requests
 import discord
+from discord import utils
 from bot import Bot
+
+# reaction_name : role_id 
+platform_map = { # no platform roles atm
+    '442691013664833550': '', # switch
+    '442691013664833550': '', # pc
+    '442691013664833550': '', # playstation
+    '442691013664833550': '', # xbox
+}
+region_map = {
+    'na': 331436384349061124, # NA
+    'eu': 331436493643972619, # eu
+    'oce': 441311109501419541, # oce
+    'Asia': 334295825368743936 # asia
+}
 
 class MyClient(discord.Client):
     async def on_ready(self):
         print('Logged on as', self.user)
         self._bot = Bot()
-        self.cmds = {
+        self.msg_cmds = {
             '!codes': self._bot.cmd_codes
         }
         self.ready = True
+        self.region_msg = int(os.getenv('regionreactmsg'))
+        self.react_channel = int(os.getenv('reactchannel'))
+        self.wallride_guild = int(os.getenv('guild'))
 
     async def on_message(self, message):
         if not self.ready:
@@ -20,21 +38,37 @@ class MyClient(discord.Client):
         cmd = message.content.split(' ')[0]
         if not cmd.startswith('!'):
             return
-        fn = self.cmds.get(cmd)
+        fn = self.msg_cmds.get(cmd)
         if not fn:
             return
         else:
             print(f'executing command [{cmd}]')
             await fn(message)
 
+    async def on_raw_reaction_add(self, payload):
+        if not self.ready:
+            return
+        if payload.message_id != self.region_msg:
+            return
+        g = self.get_guild(self.wallride_guild)
+        user = g.get_member(payload.user_id)
+        u_roles = [r.id for r in user.roles]
+        existing = [r for r in list(region_map.values()) if r in u_roles]
+        if len(existing) > 0:
+            c = self.get_channel(self.react_channel)
+            m = c.fetch_message(self.region_msg)
+            print(f'removing {existing} from {user.nick}')
+            for e in existing:
+                role = [r for r in user.roles if r.id == e][0]
+                # todo: remove reaction from message also
+                await user.remove_roles(role)
+        requested_role = region_map.get(payload.emoji.name)
+        if not requested_role:
+            return
+        await user.add_roles(g.get_role(requested_role))
+        print(f'added {requested_role} to {user.nick}')
+
 
 client = MyClient()
 client.ready = False
-
-try:
-    client.run(os.getenv('token'))
-except Exception as e:
-    m = {
-        'content': f'ERROR:\n{e.args}'
-    }
-    requests.post(os.getenv('hook'), m)
+client.run(os.getenv('token'))
