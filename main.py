@@ -50,23 +50,34 @@ class MyClient(discord.Client):
             return
         if payload.message_id != self.region_msg:
             return
+
         g = self.get_guild(self.wallride_guild)
         user = g.get_member(payload.user_id)
-        u_roles = [r.id for r in user.roles]
-        existing = [r for r in list(region_map.values()) if r in u_roles]
-        if len(existing) > 0:
+        existing = [r for r in user.roles if r.id in region_map.values()]
+
+        if payload.emoji.name == 'trash': # trash all -> exit
+            print(f'trashing roles for {user.nick}')
             c = self.get_channel(self.react_channel)
-            m = c.fetch_message(self.region_msg)
-            print(f'removing {existing} from {user.nick}')
-            for e in existing:
-                role = [r for r in user.roles if r.id == e][0]
-                # todo: remove reaction from message also
-                await user.remove_roles(role)
-        requested_role = region_map.get(payload.emoji.name)
-        if not requested_role:
+            m = await c.fetch_message(self.region_msg)
+            for r in m.reactions:
+                await r.remove(user)
+            await user.remove_roles(*existing)
             return
-        await user.add_roles(g.get_role(requested_role))
-        print(f'added {requested_role} to {user.nick}')
+
+        if len(existing) > 0: # remove existing reactions & roles -> continue
+            c = self.get_channel(self.react_channel)
+            m = await c.fetch_message(self.region_msg)
+            r_names = [r.name for r in existing]
+            print(f'removing {r_names} from {user.nick}')
+            to_remove = [r for r in m.reactions if r.emoji.name != payload.emoji.name]
+            for r in to_remove: # todo: parallel web requests
+                await r.remove(user)
+            await user.remove_roles(*existing)
+
+        requested_role = region_map.get(payload.emoji.name)
+        if requested_role: # add requested
+            await user.add_roles(g.get_role(requested_role))
+            print(f'added [{payload.emoji.name}] to {user.nick}')
 
 
 client = MyClient()
