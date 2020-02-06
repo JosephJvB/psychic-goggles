@@ -59,7 +59,7 @@ class MyClient(discord.Client):
             print(f'trashing roles for {user.nick}')
             c = self.get_channel(self.react_channel)
             m = await c.fetch_message(self.region_msg)
-            for r in m.reactions:
+            for r in m.reactions: # todo: parallel web requests
                 await r.remove(user)
             await user.remove_roles(*existing)
             return
@@ -75,7 +75,7 @@ class MyClient(discord.Client):
             await user.remove_roles(*existing)
 
         requested_role = region_map.get(payload.emoji.name)
-        if requested_role: # add requested
+        if requested_role: # add requested role
             await user.add_roles(g.get_role(requested_role))
             print(f'added [{payload.emoji.name}] to {user.nick}')
 
