@@ -76,8 +76,9 @@ class MyClient(discord.Client):
 
         requested_role = region_map.get(payload.emoji.name)
         if requested_role: # add requested role
-            await user.add_roles(g.get_role(requested_role))
-            print(f'added [{payload.emoji.name}] to {user.nick}')
+            to_add = g.get_role(requested_role)
+            await user.add_roles(to_add)
+            print(f'added [{to_add.name}] to {user.nick}')
 
 
 client = MyClient()
