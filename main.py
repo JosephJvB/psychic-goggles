@@ -56,7 +56,7 @@ class MyClient(discord.Client):
         existing = [r for r in user.roles if r.id in region_map.values()]
 
         if payload.emoji.name == 'trash': # trash all -> exit
-            print(f'trashing roles for {user.nick}')
+            print(f'trashing roles for {user.display_name}')
             c = self.get_channel(self.react_channel)
             m = await c.fetch_message(self.region_msg)
             for r in m.reactions: # todo: parallel web requests
@@ -68,7 +68,7 @@ class MyClient(discord.Client):
             c = self.get_channel(self.react_channel)
             m = await c.fetch_message(self.region_msg)
             r_names = [r.name for r in existing]
-            print(f'removing {r_names} from {user.nick}')
+            print(f'removing {r_names} from {user.display_name}')
             to_remove = [r for r in m.reactions if r.emoji.name != payload.emoji.name]
             for r in to_remove: # todo: parallel web requests
                 await r.remove(user)
@@ -78,7 +78,7 @@ class MyClient(discord.Client):
         if requested_role: # add requested role
             to_add = g.get_role(requested_role)
             await user.add_roles(to_add)
-            print(f'added [{to_add.name}] to {user.nick}')
+            print(f'added [{to_add.name}] to {user.display_name}')
 
 
 client = MyClient()
