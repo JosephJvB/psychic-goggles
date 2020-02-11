@@ -7,13 +7,13 @@ from bot import Bot
 # msgid: { reaction_name : role_id }
 msg_map = {
     # no platform roles atm
-    # int(os.getenv('platformreactmsg')): {
-    #     '_name': 'platform',
-    #     'ntswitch': 99,
-    #     'bnet': 99,
-    #     'ps4': 99,
-    #     'xbox': 99,
-    # },
+    int(os.getenv('platformreactmsg')): {
+        '_name': 'platform',
+        'ntswitch': 676896417297465389,
+        'bnet': 676896041437495306,
+        'ps4': 676896298669965376,
+        'xbox': 676896289836892160,
+    },
     int(os.getenv('regionreactmsg')): {
         '_name': 'region',
         'na': 331436384349061124,
