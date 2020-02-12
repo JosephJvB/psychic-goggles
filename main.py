@@ -6,7 +6,6 @@ from bot import Bot
 
 # msgid: { reaction_name : role_id }
 msg_map = {
-    # no platform roles atm
     int(os.getenv('platformreactmsg')): {
         '_name': 'platform',
         'ntswitch': 676896417297465389,
