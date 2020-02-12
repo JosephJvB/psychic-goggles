@@ -37,10 +37,12 @@ class MyClient(discord.Client):
             role_id = _map.get(r.emoji.name)
             u_list = await r.users().flatten()
             print(f'add {r.emoji.name}: {len(u_list)} users')
-            to_add = self.guild.get_role(role_id)
-            # for u in u_list:
-            #     mem = self.guild.get_member(u.id)
-            #     mem.add_roles(to_add)
+            role_to_add = self.guild.get_role(role_id)
+            for u in u_list:
+                mem = self.guild.get_member(u.id)
+                if mem != None and role_id not in [r.id for r in mem.roles]:
+                    await mem.add_roles(role_to_add)
+            print(f'restored all {r.emoji.name} roles')
 
 client = MyClient()
 client.run(os.getenv('token'))
