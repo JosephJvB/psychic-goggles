@@ -30,8 +30,10 @@ class MyClient(discord.Client):
             '!codes': self._bot.cmd_codes
         }
         self.ready = True
-        self.react_channel = int(os.getenv('reactchannel'))
-        self.wallride_guild = int(os.getenv('guild'))
+        self.c = self.get_channel(int(os.getenv('reactchannel')))
+        self.g = self.get_guild(int(os.getenv('guild')))
+
+
 
     async def on_message(self, message):
         if not self.ready:
@@ -52,42 +54,73 @@ class MyClient(discord.Client):
         if not self.ready:
             return
         if payload.message_id in msg_map.keys():
-            await self.handle_reaction_roles(payload)
+            await self.handle_add_role(payload)
         else:
             return
 
-    async def handle_reaction_roles(self, payload):
+    async def on_raw_reaction_remove(self, payload):
+        if not self.ready:
+            return
+        if payload.message_id in msg_map.keys() and payload.emoji.name != 'trash':
+            await self.handle_remove_role(payload)
+        else:
+            return
+
+    async def handle_add_role(self, payload):
         _map = msg_map.get(payload.message_id)
         _msg_name = _map.get('_name')
 
-        g = self.get_guild(self.wallride_guild)
-        user = g.get_member(payload.user_id)
-        c = self.get_channel(self.react_channel)
-        m = await c.fetch_message(payload.message_id)
+        user = self.g.get_member(payload.user_id)
         existing = [r for r in user.roles if r.id in _map.values()]
 
-        if payload.emoji.name == 'trash': # trash all -> exit
+        m = await self.c.fetch_message(payload.message_id)
+
+        if payload.emoji.name == 'trash' and len(existing) > 0: # trash all -> exit
             print(f'trashing {_msg_name} for {user.display_name}')
             for r in m.reactions: # todo: parallel web requests
                 await r.remove(user)
-            await user.remove_roles(*existing)
             return
 
-        if len(existing) > 0: # remove existing reactions & roles -> continue
+        exist_ids = [r.id for r in existing]
+        requested_role = _map.get(payload.emoji.name)
+        if not requested_role:
+            return print(f'<handle_role_add>: role not found with id [{requested_role}]')
+
+        to_add = self.g.get_role(requested_role)
+        if requested_role in exist_ids:
+            return print(f'<handle_role_add>: {user.display_name} already has role [{to_add.name}]')
+
+        # can only have one region, can have many platforms
+        if _msg_name == 'region' and len(existing) > 0: # remove existing reactions & roles -> continue
             r_names = [r.name for r in existing]
-            print(f'removing {r_names} from {user.display_name}')
+            print(f'<handle_role_add>: removing {r_names} from {user.display_name}')
             to_remove = [r for r in m.reactions if r.emoji.name != payload.emoji.name]
             for r in to_remove: # todo: parallel web requests
                 await r.remove(user)
-            await user.remove_roles(*existing)
 
+        await user.add_roles(to_add)
+        return print(f'<handle_role_add>: added [{to_add.name}] to {user.display_name}')
+
+    async def handle_remove_role(self, payload):
+        _map = msg_map.get(payload.message_id)
+        _msg_name = _map.get('_name')
+
+        user = self.g.get_member(payload.user_id)
+        existing = [r for r in user.roles if r.id in _map.values()]
+        exist_ids = [r.id for r in existing]
         requested_role = _map.get(payload.emoji.name)
-        if requested_role: # add requested role
-            to_add = g.get_role(requested_role)
-            await user.add_roles(to_add)
-            print(f'added [{to_add.name}] to {user.display_name}')
-        else:
-            print(f'No role found for emojiname={payload.emoji.name}, msg={_msg_name}')
+
+        if not requested_role:
+            return print(f'<handle_role_remove>: role not found with id {requested_role}')
+
+        to_remove = self.g.get_role(requested_role)
+        
+        if requested_role not in exist_ids:
+            return print(f'<handle_role_remove>: {user.display_name} does not have role {to_remove.name}')
+
+        await user.remove_roles(to_remove)
+        print(f'<handle_role_remove>: removed [{to_remove.name}] from {user.display_name}')
+
 
 client = MyClient()
 client.ready = False
