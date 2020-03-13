@@ -75,7 +75,7 @@ class MyClient(discord.Client):
 
         m = await self.c.fetch_message(payload.message_id)
 
-        if payload.emoji.name == 'trash' and len(existing) > 0: # trash all -> exit
+        if payload.emoji.name == 'trash': # trash all -> exit
             print(f'trashing {_msg_name} for {user.display_name}')
             for r in m.reactions: # todo: parallel web requests
                 await r.remove(user)
