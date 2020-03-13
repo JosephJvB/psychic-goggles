@@ -71,7 +71,6 @@ class MyClient(discord.Client):
         _msg_name = _map.get('_name')
 
         user = self.g.get_member(payload.user_id)
-        existing = [r for r in user.roles if r.id in _map.values()]
 
         m = await self.c.fetch_message(payload.message_id)
 
@@ -81,12 +80,16 @@ class MyClient(discord.Client):
                 await r.remove(user)
             return
 
-        exist_ids = [r.id for r in existing]
         requested_role = _map.get(payload.emoji.name)
         if not requested_role:
             return print(f'<handle_role_add>: role not found with id [{requested_role}]')
 
+        existing = [r for r in user.roles if r.id in _map.values()]
+        exist_ids = [r.id for r in existing]
         to_add = self.g.get_role(requested_role)
+        if not to_add:
+            return print(f'<handle_role_add>: No role in server with id = {requested_role}')
+
         if requested_role in exist_ids:
             return print(f'<handle_role_add>: {user.display_name} already has role [{to_add.name}]')
 
@@ -106,14 +109,17 @@ class MyClient(discord.Client):
         _msg_name = _map.get('_name')
 
         user = self.g.get_member(payload.user_id)
-        existing = [r for r in user.roles if r.id in _map.values()]
-        exist_ids = [r.id for r in existing]
         requested_role = _map.get(payload.emoji.name)
 
         if not requested_role:
             return print(f'<handle_role_remove>: role not found with id {requested_role}')
 
+        existing = [r for r in user.roles if r.id in _map.values()]
+        exist_ids = [r.id for r in existing]
         to_remove = self.g.get_role(requested_role)
+
+        if not to_remove:
+            return print(f'<handle_role_remove>: No role in server with id = {requested_role}')
         
         if requested_role not in exist_ids:
             return print(f'<handle_role_remove>: {user.display_name} does not have role {to_remove.name}')
