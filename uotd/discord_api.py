@@ -13,7 +13,7 @@ class Discord_Api(object):
 
     def req_members(self, after=0):
         h = { 'Authorization': self._auth }
-        u = self._base + f'/guilds/{os.getenv("guild")}/members?limit=1000&after={after}'
+        u = self._base + f'/guilds/{self._guild)}/members?limit=1000&after={after}'
         r = self.sesh.get(u, headers=h)
         if r.ok:
             return r.json()
