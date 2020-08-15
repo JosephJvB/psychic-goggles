@@ -8,14 +8,14 @@ class User_History_Service(object):
     def handle_user_update(self, before, after):
       registered_users = os.getenv('registered_users', '').split(',')
       if str(before.id) in registered_users:
-        change_avi = before.avatar_url != after.avatar_url
+        change_avi = str(before.avatar_url) != str(after.avatar_url)
         change_nick = before.nick != after.nick
         if change_avi or change_nick:
           print(f'updating user history: {before.id}')
           jason = {
             'user': {
               'id': after.id,
-              'avatar': after.avatar_url,
+              'avatar': str(after.avatar_url),
               'nickname': after.nick
             }
           }

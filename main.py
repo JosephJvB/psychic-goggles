@@ -17,7 +17,7 @@ class MyClient(discord.Client):
         self.user_history_service = User_History_Service()
 
     async def on_message(self, message):
-        legal = self.ready and not message.author.bot and message.startswith('!')
+        legal = self.ready and not message.author.bot and message.content.startswith('!')
         if not legal:
             return
         cmd = message.content.split(' ')[0]
