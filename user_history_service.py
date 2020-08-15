@@ -12,21 +12,23 @@ class User_History_Service(object):
         change_nick = before.nick != after.nick
         if change_avi or change_nick:
           print(f'updating user history: {before.id}')
-          requests.post(self.save_url, json={
+          jason = {
             'user': {
               'id': after.id,
               'avatar': after.avatar_url,
               'nickname': after.nick
             }
-          })
+          }
+          print(jason)
+          requests.post(self.save_url, json=jason)
 
 # if __name__ == '__main__':
-  # class M:
-  #   def __init__(self, d):
-  #     self.id = 'pythontest'
-  #     self.avatar_url = 'pythontest' + d
-  #     self.nick = 'pythontest' + d
-  # u = User_History_Service()
-  # b = M('-before')
-  # a = M('-after')
-  # u.handle_user_update(b, a)
+#   class M:
+#     def __init__(self, d):
+#       self.id = 'pythontest'
+#       self.avatar_url = 'pythontest' + d
+#       self.nick = 'pythontest' + d
+#   u = User_History_Service()
+#   b = M('-before')
+#   a = M('-after')
+#   u.handle_user_update(b, a)
