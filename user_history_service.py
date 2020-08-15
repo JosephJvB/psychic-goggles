@@ -12,7 +12,7 @@ class User_History_Service(object):
         change_nick = before.nick != after.nick
         if change_avi or change_nick:
           print(f'updating user history: {before.id}')
-          requests.post(self.save_url, json={
+          requests.post(self.save_url, data={
             'user': {
               'id': after.id,
               'avatar': after.avatar_url,
