@@ -1,3 +1,5 @@
+import os
+
 # msgid: { reaction_name : role_id }
 msg_map = {
     int(os.getenv('platformreactmsg')): {
