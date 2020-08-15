@@ -18,16 +18,15 @@ msg_map = {
     }
 }
 
-class Reaction_Service(self):
-    async def on_raw_reaction_remove(self, payload):
-        if not self.ready:
-            return
-        if payload.message_id in msg_map.keys() and payload.emoji.name != 'trash':
-            await self.handle_remove_role(payload)
-        else:
-            return
+class Reaction_Service(object):
+    def __init__(self, guild, channel):
+        self.g = guild
+        self.c = channel
 
     async def handle_add_role(self, payload):
+        if payload.message_id not in msg_map.keys():
+            return
+
         _map = msg_map.get(payload.message_id)
         _msg_name = _map.get('_name')
 
@@ -66,6 +65,9 @@ class Reaction_Service(self):
         return print(f'<handle_role_add>: added [{to_add.name}] to {user.display_name}')
 
     async def handle_remove_role(self, payload):
+        if payload.message_id not in msg_map.keys() or payload.emoji.name == 'trash':
+            return
+
         _map = msg_map.get(payload.message_id)
         _msg_name = _map.get('_name')
 
