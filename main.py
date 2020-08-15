@@ -36,7 +36,7 @@ class MyClient(discord.Client):
         if self.ready:
             await self.reaction_service.handle_remove_role(payload)
 
-    def on_member_update(self, before, after):
+    async def on_member_update(self, before, after):
         if self.ready:
             self.user_history_service.handle_user_update(before, after)
 
