@@ -38,6 +38,9 @@ class MyClient(discord.Client):
 
     # async def on_member_update(self, before, after):
     #     if self.ready:
+    #         self.user_history_service.handle_member_update(before, after)
+    # async def on_user_update(self, before, after):
+    #     if self.ready:
     #         self.user_history_service.handle_user_update(before, after)
 
 
