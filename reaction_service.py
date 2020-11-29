@@ -19,9 +19,9 @@ msg_map = {
 }
 
 class Reaction_Service(object):
-    def __init__(self, guild, channel):
-        self.g = guild
+    def __init__(self, channel, guild):
         self.c = channel
+        self.g = guild
 
     async def handle_add_role(self, payload):
         if payload.message_id not in msg_map.keys():
@@ -30,7 +30,7 @@ class Reaction_Service(object):
         _map = msg_map.get(payload.message_id)
         _msg_name = _map.get('_name')
 
-        user = self.g.get_member(payload.user_id)
+        user = await self.g.fetch_member(payload.user_id)
 
         m = await self.c.fetch_message(payload.message_id)
 
@@ -44,12 +44,12 @@ class Reaction_Service(object):
         if not requested_role:
             return print(f'<handle_role_add>: role not found with id [{requested_role}]')
 
-        existing = [r for r in user.roles if r.id in _map.values()]
-        exist_ids = [r.id for r in existing]
         to_add = self.g.get_role(requested_role)
         if not to_add:
             return print(f'<handle_role_add>: No role in server with id = {requested_role}')
 
+        existing = [r for r in user.roles if r.id in _map.values()]
+        exist_ids = [r.id for r in existing]
         if requested_role in exist_ids:
             return print(f'<handle_role_add>: {user.display_name} already has role [{to_add.name}]')
 
@@ -71,19 +71,19 @@ class Reaction_Service(object):
         _map = msg_map.get(payload.message_id)
         _msg_name = _map.get('_name')
 
-        user = self.g.get_member(payload.user_id)
+        user = await self.g.fetch_member(payload.user_id)
         requested_role = _map.get(payload.emoji.name)
 
         if not requested_role:
             return print(f'<handle_role_remove>: role not found with id {requested_role}')
 
-        existing = [r for r in user.roles if r.id in _map.values()]
-        exist_ids = [r.id for r in existing]
         to_remove = self.g.get_role(requested_role)
 
         if not to_remove:
             return print(f'<handle_role_remove>: No role in server with id = {requested_role}')
-        
+
+        existing = [r for r in user.roles if r.id in _map.values()]
+        exist_ids = [r.id for r in existing]        
         if requested_role not in exist_ids:
             return print(f'<handle_role_remove>: {user.display_name} does not have role {to_remove.name}')
 

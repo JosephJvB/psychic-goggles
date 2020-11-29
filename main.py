@@ -14,19 +14,7 @@ class MyClient(discord.Client):
             self.get_channel(int(os.getenv('reactchannel'))),
             self.get_guild(int(os.getenv('guild')))
         )
-        self.user_history_service = User_History_Service()
-
-    async def on_message(self, message):
-        legal = self.ready and not message.author.bot and message.content.startswith('!')
-        if not legal:
-            return
-        cmd = message.content.split(' ')[0]
-        fn = self.msg_cmds.get(cmd)
-        if not fn:
-            return
-        else:
-            print(f'executing command [{cmd}]')
-            await fn(message)
+        # self.user_history_service = User_History_Service()
 
     async def on_raw_reaction_add(self, payload):
         if self.ready:
@@ -36,14 +24,25 @@ class MyClient(discord.Client):
         if self.ready:
             await self.reaction_service.handle_remove_role(payload)
 
+client = MyClient()
+client.ready = False
+client.run(os.getenv('token'))
+
+    # async def on_message(self, message):
+    #     legal = self.ready and not message.author.bot and message.content.startswith('!')
+    #     if not legal:
+    #         return
+    #     cmd = message.content.split(' ')[0]
+    #     fn = self.msg_cmds.get(cmd)
+    #     if not fn:
+    #         return
+    #     else:
+    #         print(f'executing command [{cmd}]')
+    #         await fn(message)
+
     # async def on_member_update(self, before, after):
     #     if self.ready:
     #         self.user_history_service.handle_member_update(before, after)
     # async def on_user_update(self, before, after):
     #     if self.ready:
     #         self.user_history_service.handle_user_update(before, after)
-
-
-client = MyClient()
-client.ready = False
-client.run(os.getenv('token'))
