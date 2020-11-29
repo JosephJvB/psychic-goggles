@@ -1,4 +1,5 @@
 import os
+import asyncio
 
 # msgid: { reaction_name : role_id }
 msg_map = {
@@ -30,9 +31,10 @@ class Reaction_Service(object):
         _map = msg_map.get(payload.message_id)
         _msg_name = _map.get('_name')
 
-        user = await self.g.fetch_member(payload.user_id)
-
-        m = await self.c.fetch_message(payload.message_id)
+        user, m = await asyncio.gather(
+            self.g.fetch_member(payload.user_id),
+            self.c.fetch_message(payload.message_id)
+        )
 
         if payload.emoji.name == 'trash': # trash all -> exit
             print(f'trashing {_msg_name} for {user.display_name}')
