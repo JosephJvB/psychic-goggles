@@ -1,4 +1,5 @@
 import os
+import sys
 import discord
 from discord import utils
 
@@ -38,11 +39,18 @@ class MyClient(discord.Client):
             u_list = await r.users().flatten()
             print(f'add {r.emoji.name}: {len(u_list)} users')
             role_to_add = self.guild.get_role(role_id)
+            restored = 0
             for u in u_list:
-                mem = self.guild.get_member(u.id)
+                mem = None
+                try:
+                    mem = await self.guild.fetch_member(u.id)
+                except Exception:
+                    pass
                 if mem != None and role_id not in [r.id for r in mem.roles]:
                     await mem.add_roles(role_to_add)
-            print(f'restored all {r.emoji.name} roles')
+                    restored += 1
+            print(f'restored {restored} / {len(u_list)} {r.emoji.name} roles')
+        sys.exit('all reaction roles restored')
 
 client = MyClient()
 client.run(os.getenv('token'))
