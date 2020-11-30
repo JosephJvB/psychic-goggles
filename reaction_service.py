@@ -38,8 +38,9 @@ class Reaction_Service(object):
 
         if payload.emoji.name == 'trash': # trash all -> exit
             print(f'trashing {_msg_name} for {user.display_name}')
-            for r in m.reactions: # todo: parallel web requests
-                await r.remove(user)
+            reqs = [r.remove(user) for r in m.reactions]
+            l = asyncio.get_event_loop()
+            l.run_until_complete(asyncio.wait(reqs, return_when=asyncio.ALL_COMPLETED))
             return
 
         requested_role = _map.get(payload.emoji.name)
@@ -60,8 +61,9 @@ class Reaction_Service(object):
             r_names = [r.name for r in existing]
             print(f'<handle_role_add>: removing {r_names} from {user.display_name}')
             to_remove = [r for r in m.reactions if r.emoji.name != payload.emoji.name]
-            for r in to_remove: # todo: parallel web requests
-                await r.remove(user)
+            reqs = [r.remove(user) for r in to_remove]
+            l = asyncio.get_event_loop()
+            l.run_until_complete(asyncio.wait(reqs, return_when=asyncio.ALL_COMPLETED))
 
         await user.add_roles(to_add)
         return print(f'<handle_role_add>: added [{to_add.name}] to {user.display_name}')
